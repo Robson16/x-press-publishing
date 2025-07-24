@@ -1,0 +1,13 @@
+const sqlite = require('sqlite3').verbose();
+
+const db = new sqlite.Database('./database.sqlite');
+
+db.run(`
+  CREATE TABLE IF NOT EXISTS Artist (
+    id INTEGER NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    date_of_birth TEXT NOT NULL,
+    biography TEXT NOT NULL,
+    is_currently_employed INTEGER NOT NULL DEFAULT 1
+  )
+`);
