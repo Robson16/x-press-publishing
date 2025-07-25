@@ -85,4 +85,46 @@ artistsRouter.post('/', (req, res, next) => {
   });
 });
 
+artistsRouter.put('/:artistId', (req, res, next) => {
+  const { name, dateOfBirth, biography } = req.body.artist;
+
+  if (!name || !dateOfBirth || !biography) {
+    return res.status(400).send('Missing required fields');
+  }
+
+  const isCurrentlyEmployed = req.body.artist.isCurrentlyEmployed === 0 ? 0 : 1;
+
+  const sql = `
+    UPDATE Artist
+    SET
+      name = $name,
+      date_of_birth = $dateOfBirth,
+      biography = $biography,
+      is_currently_employed = $isCurrentlyEmployed
+    WHERE id = $artistId
+  `;
+
+  const values = {
+    $name: name,
+    $dateOfBirth: dateOfBirth,
+    $biography: biography,
+    $isCurrentlyEmployed: isCurrentlyEmployed,
+    $artistId: req.params.artistId
+  };
+
+  db.run(sql, values, function (error) {
+    if (error) {
+      return next(error);
+    }
+
+    db.get('SELECT * FROM Artist WHERE id = $id', { $id: req.params.artistId }, (error, artist) => {
+      if (error) {
+        return next(error);
+      }
+
+      res.status(200).json({ artist: artist });
+    });
+  });
+});
+
 module.exports = artistsRouter;
