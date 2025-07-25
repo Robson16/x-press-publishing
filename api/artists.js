@@ -117,6 +117,40 @@ artistsRouter.put('/:artistId', (req, res, next) => {
       return next(error);
     }
 
+    if (this.changes === 0) {
+      return res.status(404).send('Artist not found');
+    }
+
+    db.get('SELECT * FROM Artist WHERE id = $id', { $id: req.params.artistId }, (error, artist) => {
+      if (error) {
+        return next(error);
+      }
+
+      res.status(200).json({ artist: artist });
+    });
+  });
+});
+
+// Deletes an artist by setting is_currently_employed to 0
+// This allows for soft deletion without removing the record from the database
+artistsRouter.delete('/:artistId', (req, res, next) => {
+  const sql = `
+    UPDATE Artist
+    SET is_currently_employed = 0 
+    WHERE id = $artistId
+  `;
+
+  const values = { $artistId: req.params.artistId };
+
+  db.run(sql, values, function (error) {
+    if (error) {
+      return next(error);
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).send('Artist not found');
+    }
+
     db.get('SELECT * FROM Artist WHERE id = $id', { $id: req.params.artistId }, (error, artist) => {
       if (error) {
         return next(error);
