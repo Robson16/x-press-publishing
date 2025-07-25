@@ -1,7 +1,8 @@
 const express = require('express');
 const sqlite = require('sqlite3').verbose();
+const path = require('path');
 
-const db = new sqlite.Database(process.env.TEST_DATABASE || '../database.sqlite')
+const db = new sqlite.Database(process.env.TEST_DATABASE || path.resolve(__dirname, '../database.sqlite'));
 const artistsRouter = express.Router();
 
 artistsRouter.param('artistId', (req, res, next, artistId) => {
