@@ -148,4 +148,24 @@ issuesRouter.put('/:issueId', (req, res, next) => {
   });
 });
 
+issuesRouter.delete('/:issueId', (req, res, next) => {
+  const issueId = req.params.issueId;
+
+  db.run(
+    'DELETE FROM Issue WHERE id = $issueId',
+    { $issueId: issueId },
+    function (error) {
+      if (error) {
+        return next(error);
+      }
+
+      if (this.changes === 0) {
+        return res.status(404).send('Issue not found');
+      }
+
+      res.status(204).send();
+    }
+  );
+});
+
 module.exports = issuesRouter;
