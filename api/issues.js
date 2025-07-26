@@ -28,8 +28,6 @@ issuesRouter.param('issueId', (req, res, next, issueId) => {
 issuesRouter.get('/', (req, res, next) => {
   const seriesId = req.params.seriesId;
 
-  console.log(`Fetching issues for series with ID: ${seriesId}`);
-
   db.all(
     'SELECT * FROM Issue WHERE series_id = $seriesId',
     { $seriesId: seriesId },

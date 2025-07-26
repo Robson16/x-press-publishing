@@ -124,4 +124,42 @@ seriesRouter.put('/:seriesId', (req, res, next) => {
   });
 });
 
+seriesRouter.delete('/:seriesId', (req, res, next) => {
+  const seriesId = req.params.seriesId;
+
+  const hasIssuesSql = `
+    SELECT * FROM Issue
+    WHERE series_id = $seriesId
+  `;
+
+  const deleteSql = `
+    DELETE FROM Series 
+    WHERE id = $seriesId
+  `;
+
+  const values = { $seriesId: seriesId };
+
+  db.all(hasIssuesSql, values, (error, issues) => {
+    if (error) {
+      return next(error);
+    }
+
+    if (issues.length > 0) {
+      return res.status(400).send('Cannot delete series with associated issues');
+    }
+
+    db.run(deleteSql, values, function (error) {
+      if (error) {
+        return next(error);
+      }
+
+      if (this.changes === 0) {
+        return res.status(404).send('Series not found');
+      }
+
+      res.status(204).send();
+    });
+  });
+});
+
 module.exports = seriesRouter;
