@@ -1,7 +1,7 @@
 {
   "name": "x-press-publishing",
   "version": "1.0.0",
-  "description": "",
+  "description": "A publishing platform built with Express and React.",
   "main": "server.js",
   "scripts": {
     "test": "mocha",
