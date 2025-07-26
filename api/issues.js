@@ -99,4 +99,53 @@ issuesRouter.post('/', (req, res, next) => {
   });
 });
 
+issuesRouter.put('/:issueId', (req, res, next) => {
+  const issueId = req.params.issueId;
+  const { name, issueNumber, publicationDate, artistId } = req.body.issue;
+
+  if (!name || !issueNumber || !publicationDate || !artistId) {
+    return res.status(400).send('Missing required fields');
+  }
+
+  const artistExists = db.get(
+    'SELECT * FROM Artist WHERE id = $artistId',
+    { $artistId: artistId }
+  );
+
+  if (!artistExists) {
+    return res.status(400).send('Artist not found');
+  }
+
+  const sql = `
+    UPDATE Issue
+    SET name = $name,
+        issue_number = $issueNumber,
+        publication_date = $publicationDate,
+        artist_id = $artistId
+    WHERE id = $issueId
+  `;
+
+  const values = {
+    $name: name,
+    $issueNumber: issueNumber,
+    $publicationDate: publicationDate,
+    $artistId: artistId,
+    $issueId: issueId
+  };
+
+  db.run(sql, values, function (error) {
+    if (error) {
+      return next(error);
+    }
+
+    db.get('SELECT * FROM Issue WHERE id = $id', { $id: issueId }, (error, issue) => {
+      if (error) {
+        return next(error);
+      }
+
+      res.status(200).json({ issue: issue });
+    });
+  });
+});
+
 module.exports = issuesRouter;
