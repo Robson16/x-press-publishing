@@ -78,4 +78,44 @@ seriesRouter.post('/', (req, res, next) => {
   })
 });
 
+seriesRouter.put('/:seriesId', (req, res, next) => {
+  const { name, description } = req.body.series;
+
+  if (!name || !description) {
+    return res.status(400).send('Missing required fields');
+  }
+
+  const sql = `
+    UPDATE Series
+    SET
+      name = $name,
+      description = $description
+    WHERE id = $seriesId
+  `;
+
+  const values = {
+    $name: name,
+    $description: description,
+    $seriesId: req.params.seriesId
+  };
+
+  db.run(sql, values, function (error) {
+    if (error) {
+      return next(error);
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).send('Series not found');
+    }
+
+    db.get('SELECT * FROM Series WHERE id = $id', { $id: req.params.seriesId }, (error, series) => {
+      if (error) {
+        return next(error);
+      }
+
+      res.status(200).json({ series: series });
+    });
+  });
+});
+
 module.exports = seriesRouter;
