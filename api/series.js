@@ -2,9 +2,12 @@ const express = require('express');
 const sqlite = require('sqlite3');
 const path = require('path');
 
+const issuesRouter = require('./issues');
+
 const db = new sqlite.Database(process.env.TEST_DATABASE || path.resolve(__dirname, '../database.sqlite'));
 const seriesRouter = express.Router();
 
+// Middleware to handle seriesId parameter
 seriesRouter.param('seriesId', (req, res, next, seriesId) => {
   const sql = 'SELECT * FROM Series WHERE id = $seriesId';
   const values = { $seriesId: seriesId };
@@ -23,6 +26,9 @@ seriesRouter.param('seriesId', (req, res, next, seriesId) => {
     next();
   });
 });
+
+// Mount issues router to handle issues for a specific series
+seriesRouter.use('/:seriesId/issues', issuesRouter);
 
 seriesRouter.get('/', (req, res, next) => {
   db.all(
