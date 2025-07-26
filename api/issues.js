@@ -5,6 +5,26 @@ const path = require('path');
 const db = new sqlite.Database(process.env.TEST_DATABASE || path.resolve(__dirname, '../database.sqlite'));
 const issuesRouter = express.Router({ mergeParams: true });
 
+// Middleware to handle issueId parameter
+issuesRouter.param('issueId', (req, res, next, issueId) => {
+  db.get(
+    'SELECT * FROM Issue WHERE id = $issueId',
+    { $issueId: issueId },
+    (error, issue) => {
+      if (error) {
+        return next(error);
+      }
+
+      if (!issue) {
+        return res.status(404).send();
+      }
+
+      req.issue = issue;
+
+      next();
+    });
+});
+
 issuesRouter.get('/', (req, res, next) => {
   const seriesId = req.params.seriesId;
 
