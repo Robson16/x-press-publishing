@@ -41,4 +41,41 @@ seriesRouter.get('/:seriesId', (req, res) => {
   res.status(200).json({ series: req.series });
 });
 
+seriesRouter.post('/', (req, res, next) => {
+  const { name, description } = req.body.series;
+
+  if (!name || !description) {
+    return res.status(400).send('Missing required fields');
+  }
+
+  const sql = `
+    INSERT INTO Series (
+      name,
+      description
+    ) VALUES (
+      $name,
+      $description
+    )
+  `;
+
+  const values = {
+    $name: name,
+    $description: description
+  };
+
+  db.run(sql, values, function (error) {
+    if (error) {
+      return next(error);
+    }
+
+    db.get('SELECT * FROM Series WHERE id = $id', { $id: this.lastID }, (error, series) => {
+      if (error) {
+        return next(error);
+      }
+
+      res.status(201).json({ series: series });
+    });
+  })
+});
+
 module.exports = seriesRouter;
