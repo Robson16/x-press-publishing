@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha",
     "start": "node server.js",
-    "migrate": "node migration.js"
+    "migrate": "node migration.js",
+    "seed": "node seed.js"
   },
   "author": "Robson16",
   "license": "MIT",
